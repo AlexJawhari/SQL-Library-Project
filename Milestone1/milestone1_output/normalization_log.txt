@@ -1,0 +1,22 @@
+Normalization log
+=================
+
+Decisions & policies:
+- ISBNs preserved as strings; leading zeros kept; no int casts.
+- Prefer ISBN-13 as primary when present; otherwise use ISBN-10.
+- Missing author -> book_authors row with empty author_id (interpreted as NULL).
+- Rows missing both ISBN10 and ISBN13 saved to bad_books_rows.csv.
+- Author identity = exact spelling; no fuzzy merges.
+
+Input summary:
+ - books file: books.csv
+ - detected delimiter: 	
+ - borrowers file: borrowers.csv
+ - detected delimiter: ,
+
+Output statistics:
+ - input book rows: 25001
+ - normalized book rows: 25001
+ - unique author names: 15576
+ - book-author links: 30560
+ - bad book rows (no isbn): 0
