@@ -8,13 +8,13 @@ bp = Blueprint("borrowers", __name__, url_prefix="/api")
 def generate_new_card_id(cur):
     cur.execute(
         """
-        SELECT MAX(CAST(SUBSTRING(card_id, 3) AS UNSIGNED)) AS max_value
+        SELECT MAX(CAST(SUBSTR(card_id, 3) AS INTEGER)) AS max_value
         FROM BORROWER
         WHERE card_id LIKE 'ID%'
         """
     )
     row = cur.fetchone()
-    num = row["max_value"] or 0
+    num = row["max_value"] if row["max_value"] is not None else 0
     return f"ID{num + 1:06d}"
 
 
@@ -37,21 +37,32 @@ def create_borrower():
 
     conn = get_db()
     try:
-        with conn.cursor() as cur:
-            cur.execute("SELECT card_id FROM BORROWER WHERE ssn = %s", (ssn_norm,))
-            existing = cur.fetchone()
-            if existing:
-                return jsonify({"error": "Borrower exists", "card_id": existing["card_id"]}), 409
+        cur = conn.cursor()
 
-            new_id = generate_new_card_id(cur)
-
-            cur.execute(
-                """
-                INSERT INTO BORROWER (card_id, ssn, bname, address, phone)
-                VALUES (%s, %s, %s, %s, %s)
-                """,
-                (new_id, ssn_norm, bname, address, phone or None),
+        cur.execute("SELECT card_id FROM BORROWER WHERE ssn = ?", (ssn_norm,))
+        existing = cur.fetchone()
+        if existing:
+            return (
+                jsonify(
+                    {
+                        "error": "Borrower exists",
+                        "card_id": existing["card_id"],
+                    }
+                ),
+                409,
             )
+
+        new_id = generate_new_card_id(cur)
+
+        cur.execute(
+            """
+            INSERT INTO BORROWER (card_id, ssn, bname, address, phone)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (new_id, ssn_norm, bname, address, phone or None),
+        )
+
+        conn.commit()
 
         return (
             jsonify(
@@ -67,6 +78,7 @@ def create_borrower():
         )
 
     except Exception as e:
+        conn.rollback()
         return jsonify({"error": "Database error", "details": str(e)}), 500
     finally:
         conn.close()
