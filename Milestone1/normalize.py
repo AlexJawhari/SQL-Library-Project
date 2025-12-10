@@ -312,11 +312,10 @@ def normalize_and_write():
         phone = normalize_text(r.get(borrower_map['phone'], "")) if borrower_map['phone'] else ""
         if card == "" and bname == "":
             continue
-        borrowers_out.append((card, ssn, bname, addr, phone))
-        if card == "" and bname == "":
-        #for if row empty skip
+        if not ssn or not bname or not addr:
             continue
-     borrowers_out.append((card, ssn, bname, addr, phone))
+
+        borrowers_out.append((card, ssn, bname, addr, phone))
     # ---------- Write CSV outputs ----------
     book_path = os.path.join(OUTPUT_DIR, "book.csv")
     authors_path = os.path.join(OUTPUT_DIR, "authors.csv")
