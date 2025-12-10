@@ -6,7 +6,7 @@ Outputs (written to milestone1_output/):
  - book.csv           (isbn_primary,isbn10,isbn13,title)
  - authors.csv        (author_id,name)
  - book_authors.csv   (isbn_primary,author_id)  (empty author_id => NULL)
- - borrower.csv       (card_id,ssn,bname,address,phone)
+ - borrower.csv       (card_no,ssn,bname,address,phone)
  - bad_books_rows.csv (original book rows missing both isbn10 and isbn13)
  - normalization_log.txt
 """
@@ -54,6 +54,13 @@ def normalize_person_name(raw):
         if len(p) == 1 and p.isalpha():
             parts[i] = p + "."
     return " ".join(parts)
+
+def normalize_ssn(raw):
+    raw = normalize_text(raw)
+    digits = re.sub(r'\D', '', s)
+    if len(digits) == 9:
+        return f"{digits[0:3]}-{digits[3:5]}-{digits[5:9]}"
+    return ""
 
 # ---------- ISBN and author parsing ----------
 def clean_isbn(raw):
@@ -296,7 +303,7 @@ def normalize_and_write():
     borrowers_out = []
     for r in borrower_rows:
         card = normalize_text(r.get(borrower_map['card_id'], ""))
-        ssn = normalize_text(r.get(borrower_map['ssn'], ""))
+        ssn = normalize_ssn(r.get(borrower_map['ssn'], ""))
         if 'first_name' in r and 'last_name' in r:
             bname = normalize_person_name((r.get('first_name','') + " " + r.get('last_name','')).strip())
         else:
@@ -306,7 +313,10 @@ def normalize_and_write():
         if card == "" and bname == "":
             continue
         borrowers_out.append((card, ssn, bname, addr, phone))
-
+        if card == "" and bname == "":
+        #for if row empty skip
+            continue
+     borrowers_out.append((card, ssn, bname, addr, phone))
     # ---------- Write CSV outputs ----------
     book_path = os.path.join(OUTPUT_DIR, "book.csv")
     authors_path = os.path.join(OUTPUT_DIR, "authors.csv")
@@ -335,7 +345,7 @@ def normalize_and_write():
 
     with open(borrower_path, "w", encoding="utf-8", newline='') as f:
         w = csv.writer(f)
-        w.writerow(["card_id", "ssn", "bname", "address", "phone"])
+        w.writerow(["card_no", "ssn", "bname", "address", "phone"])
         for row in borrowers_out:
             w.writerow(row)
 
