@@ -1,36 +1,56 @@
-USE library_demo;
+import csv
+from pathlib import Path
+from db import get_db
 
--- change path later based on where it is on your pc
--- 'C:/Users/you/Projects/Milestone3/backend/data/book.csv'
+BASE_DIR = Path(__file__).resolve().parent
+DATA_DIR = BASE_DIR.parent / "data"
 
-LOAD DATA LOCAL INFILE '/ABSOLUTE/PATH/TO/Milestone3/backend/data/book.csv'
-INTO TABLE BOOK
-FIELDS TERMINATED BY ','
-ENCLOSED BY '"'
-LINES TERMINATED BY '\n'
-IGNORE 1 LINES
-(isbn_primary, isbn10, isbn13, title);
+def load_table_from_csv(conn, table, columns, csv_name):
+    path = DATA_DIR / csv_name
+    with path.open("r", encoding="utf-8", newline="") as f:
+        reader = csv.DictReader(f)
+        rows = []
+        for r in reader:
+            rows.append(tuple(r[col] if r[col] != "" else None for col in columns))
+    placeholders = ",".join(["?"] * len(columns))
+    col_list = ",".join(columns)
+    sql = f"INSERT INTO {table} ({col_list}) VALUES ({placeholders})"
+    with conn:
+        conn.executemany(sql, rows)
+    print(f"Loaded {len(rows)} rows into {table} from {csv_name}")
 
-LOAD DATA LOCAL INFILE '/ABSOLUTE/PATH/TO/Milestone3/backend/data/authors.csv'
-INTO TABLE AUTHORS
-FIELDS TERMINATED BY ','
-ENCLOSED BY '"'
-LINES TERMINATED BY '\n'
-IGNORE 1 LINES
-(author_id, name);
+def main():
+    conn = get_db()
 
-LOAD DATA LOCAL INFILE '/ABSOLUTE/PATH/TO/Milestone3/backend/data/book_authors.csv'
-INTO TABLE BOOK_AUTHORS
-FIELDS TERMINATED BY ','
-ENCLOSED BY '"'
-LINES TERMINATED BY '\n'
-IGNORE 1 LINES
-(isbn_primary, author_id);
+    load_table_from_csv(
+        conn,
+        "BOOK",
+        ["isbn_primary", "isbn10", "isbn13", "title"],
+        "book.csv",
+    )
 
-LOAD DATA LOCAL INFILE '/ABSOLUTE/PATH/TO/Milestone3/backend/data/borrower.csv'
-INTO TABLE BORROWER
-FIELDS TERMINATED BY ','
-ENCLOSED BY '"'
-LINES TERMININATED BY '\n'
-IGNORE 1 LINES
-(card_id, ssn, bname, address, phone);
+    load_table_from_csv(
+        conn,
+        "AUTHORS",
+        ["author_id", "name"],
+        "authors.csv",
+    )
+
+    load_table_from_csv(
+        conn,
+        "BOOK_AUTHORS",
+        ["isbn_primary", "author_id"],
+        "book_authors.csv",
+    )
+
+    load_table_from_csv(
+        conn,
+        "BORROWER",
+        ["card_id", "ssn", "bname", "address", "phone"],
+        "borrower.csv",
+    )
+
+    conn.close()
+
+if __name__ == "__main__":
+    main()
