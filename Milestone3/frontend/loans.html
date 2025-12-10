@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Library Demo - Loans</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="container">
+    <header class="page-header d-flex justify-content-between align-items-center">
+      <div>
+        <h1>Loans</h1>
+        <p class="text-muted mb-0">Checkout, batch checkout, and checkin books.</p>
+      </div>
+      <a class="btn btn-outline-secondary" href="landingpage.html">Home</a>
+    </header>
+
+    <section class="form-section">
+      <h5>Checkout a book</h5>
+      <div class="row g-2">
+        <div class="col-md-4">
+          <input type="text" id="checkoutIsbn" class="form-control" placeholder="ISBN">
+        </div>
+        <div class="col-md-4">
+          <input type="text" id="checkoutCard" class="form-control" placeholder="Borrower card_no">
+        </div>
+        <div class="col-md-4">
+          <button class="btn btn-primary w-100" id="checkoutBtn">Checkout</button>
+        </div>
+      </div>
+      <div class="form-text">Rules: max 3 active loans per borrower; cannot checkout if already out; block if unpaid fines.</div>
+    </section>
+
+    <section class="form-section">
+      <h5>Batch checkout</h5>
+      <div class="row g-2">
+        <div class="col-md-6">
+          <textarea id="batchIsbns" class="form-control" rows="3" placeholder="One ISBN per line"></textarea>
+        </div>
+        <div class="col-md-3">
+          <input type="text" id="batchCard" class="form-control" placeholder="Borrower card_no">
+        </div>
+        <div class="col-md-3 d-grid">
+          <button class="btn btn-secondary" id="batchBtn">Batch checkout</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="form-section">
+      <h5>Checkin</h5>
+      <div class="row g-2">
+        <div class="col-md-6">
+          <input type="text" id="checkinLoanId" class="form-control" placeholder="Loan ID">
+        </div>
+        <div class="col-md-3">
+          <button class="btn btn-success w-100" id="checkinBtn">Checkin</button>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h5>Status</h5>
+      <div id="loanStatus" class="small text-muted">No actions yet.</div>
+    </section>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/loans.js"></script>
+</body>
+</html>
+

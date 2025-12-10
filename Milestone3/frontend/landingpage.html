@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Library Demo - Landing</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="container">
+    <header class="page-header">
+      <h1>Library System Demo</h1>
+      <p class="text-muted">Milestone 3 – Local demo (real backend expected).</p>
+    </header>
+
+    <div class="row g-3">
+      <div class="col-md-6 col-lg-4">
+        <a class="card card-link h-100" href="search.html">
+          <div class="card-body">
+            <h5 class="card-title">Search Books</h5>
+            <p class="card-text">Find books by ISBN, title, or author and view availability.</p>
+          </div>
+        </a>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <a class="card card-link h-100" href="loans.html">
+          <div class="card-body">
+            <h5 class="card-title">Loans</h5>
+            <p class="card-text">Checkout, batch checkout, and checkin books.</p>
+          </div>
+        </a>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <a class="card card-link h-100" href="borrower.html">
+          <div class="card-body">
+            <h5 class="card-title">Borrowers</h5>
+            <p class="card-text">Create borrower accounts with SSN validation.</p>
+          </div>
+        </a>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <a class="card card-link h-100" href="fines.html">
+          <div class="card-body">
+            <h5 class="card-title">Fines</h5>
+            <p class="card-text">Refresh fines, list totals, and pay when eligible.</p>
+          </div>
+        </a>
+      </div>
+    </div>
+
+    <div class="mt-4">
+      <div class="alert alert-info">
+        <div>Open these files directly or with a simple local server (e.g., <code>python -m http.server 8000</code>).</div>
+        <div>The backend must be running for live data (Flask + MySQL stub in <code>Milestone3/demo/backend</code>).</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+

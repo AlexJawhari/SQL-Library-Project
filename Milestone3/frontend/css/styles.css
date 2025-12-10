@@ -1,0 +1,26 @@
+body {
+  padding-top: 20px;
+  padding-bottom: 40px;
+}
+
+.page-header {
+  margin-bottom: 24px;
+}
+
+.card-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.card-link:hover {
+  text-decoration: none;
+}
+
+.form-section {
+  margin-bottom: 24px;
+}
+
+.table-responsive {
+  margin-top: 12px;
+}
+
