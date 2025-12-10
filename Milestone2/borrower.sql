@@ -1,13 +1,15 @@
---1. Create borrower table
-CREATE TABLE Borrower (
-     card_no VARCHAR(20) PRIMARY KEY,
-     ssn VARCHAR(11) NOT NULL UNIQUE,
-     bname VARCHAR(100) NOT NULL,
-     address VARCHAR(255) NOT NULL,
-     phone VARCHAR(20)
+-- Create borrower table
+CREATE TABLE BORROWER (
+    card_id VARCHAR(8) NOT NULL,
+    ssn     VARCHAR(11) NOT NULL,
+    bname   VARCHAR(100) NOT NULL,
+    address VARCHAR(255) NOT NULL,
+    phone   VARCHAR(20),
+    PRIMARY KEY (card_id),
+    UNIQUE KEY uq_borrower_ssn (ssn)
 );
 
---2. Create borrower
+-- Create borrower
 
 -- Validates SSN, name, and address (NOT NULL)
 -- Rejects creation if SSN existed previously (one per SSN)
