@@ -11,7 +11,7 @@ def fines_refresh():
     try:
         cur.callproc("refresh_fines")  #call the SQLl procedure
         db.commit()
-        retunr jsonify({"status": "ok", "message": "Fines refreshed"})
+        return jsonify({"status": "ok", "message": "Fines refreshed"})
     finally:
         cur.close()
         db.close()
