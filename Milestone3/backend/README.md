@@ -1,6 +1,6 @@
 # Demo backend stub (Flask)
 
-Uses MySQL (PyMySQL). Fill connection settings in `app.py` (MYSQL_CONFIG).
+Uses MySQL (PyMySQL). Fill connection settings in `db.py` (MYSQL_CONFIG).
 
 ## Quick start
 ```bash
@@ -16,3 +16,11 @@ Server runs at `http://127.0.0.1:5000`. Frontend pages can be opened via file://
 ## CSV data
 - Source CSVs copied from `Milestone1/milestone1_output/` into `Milestone3/demo/data/`.
 - Teammates can use MySQL `LOAD DATA INFILE` (or a short Python importer) to load these into the MySQL schema they create.
+
+## Structure (per teammate task)
+- `app.py` registers blueprints; keep as entry point.
+- `db.py` holds MySQL config and `get_db()` helper.
+- `routes/search.py` — Task A
+- `routes/loans.py` — Task B
+- `routes/borrowers.py` — Task C (and DB setup/import scripts)
+- `routes/fines.py` — Task D
