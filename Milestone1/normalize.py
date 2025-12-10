@@ -57,7 +57,7 @@ def normalize_person_name(raw):
 
 def normalize_ssn(raw):
     raw = normalize_text(raw)
-    digits = re.sub(r'\D', '', s)
+    digits = re.sub(r'\D', '', raw)
     if len(digits) == 9:
         return f"{digits[0:3]}-{digits[3:5]}-{digits[5:9]}"
     return ""
