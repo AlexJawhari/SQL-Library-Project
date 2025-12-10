@@ -20,7 +20,7 @@
     setStatus('Creating borrower...', 'primary');
     try {
       const res = await api.createBorrower(payload);
-      setStatus(`Created borrower ${res.card_no}.`, 'success');
+      setStatus(`Created borrower ${res.card_id}.`, 'success');
     } catch (err) {
       setStatus(`Error: ${err.message}`, 'danger');
     }
@@ -30,4 +30,3 @@
     document.getElementById('createBorrowerBtn').addEventListener('click', handleCreate);
   });
 })();
-
