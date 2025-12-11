@@ -15,7 +15,10 @@ app.register_blueprint(borrowers_bp)
 app.register_blueprint(fines_bp)
 
 # Serve frontend files to avoid CORS issues (register after API routes)
-FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend"
+# Use absolute path to frontend directory
+import os
+BASE_DIR = Path(__file__).resolve().parent.parent
+FRONTEND_DIR = BASE_DIR / "frontend"
 
 @app.route("/")
 def serve_index():
@@ -31,11 +34,19 @@ def serve_js(filename):
 
 @app.route("/<path:path>")
 def serve_frontend(path):
-    if not path.startswith("api") and (path.endswith(".html") or path in ["search", "loans", "borrower", "fines"]):
-        if path.endswith(".html"):
-            return send_from_directory(str(FRONTEND_DIR), path)
-        else:
-            return send_from_directory(str(FRONTEND_DIR), f"{path}.html")
+    # Don't serve frontend for API routes
+    if path.startswith("api"):
+        return {"error": "Not found"}, 404
+    
+    # Serve HTML files
+    if path.endswith(".html"):
+        return send_from_directory(str(FRONTEND_DIR), path)
+    
+    # Serve pages without .html extension
+    if path in ["search", "loans", "borrower", "fines"]:
+        return send_from_directory(str(FRONTEND_DIR), f"{path}.html")
+    
+    # Default to landing page
     return send_from_directory(str(FRONTEND_DIR), "landingpage.html")
 
 
