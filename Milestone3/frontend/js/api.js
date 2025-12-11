@@ -77,6 +77,9 @@
       if (daysLate !== null) body.days_late = daysLate;
       return realFetch('/admin/fines/apply', { method: 'POST', body: JSON.stringify(body) });
     },
+    async deleteBorrower(cardId) {
+      return realFetch(`/borrowers/${encodeURIComponent(cardId)}`, { method: 'DELETE' });
+    },
   };
 
   window.demoApi = api;

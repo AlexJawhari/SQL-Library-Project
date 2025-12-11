@@ -82,3 +82,70 @@ def create_borrower():
         return jsonify({"error": "Database error", "details": str(e)}), 500
     finally:
         conn.close()
+
+
+@bp.route("/borrowers/<card_id>", methods=["DELETE"])
+def delete_borrower(card_id):
+    """Delete a borrower if they have no active loans or unpaid fines."""
+    conn = get_db()
+    try:
+        cursor = conn.cursor()
+        
+        # Verify borrower exists
+        cursor.execute("SELECT card_id FROM BORROWER WHERE card_id = ?", (card_id,))
+        if not cursor.fetchone():
+            return jsonify({"error": "Borrower not found"}), 404
+        
+        # Check for active loans
+        cursor.execute("""
+            SELECT COUNT(*) as count
+            FROM BOOK_LOANS
+            WHERE card_id = ? AND date_in IS NULL
+        """, (card_id,))
+        result = cursor.fetchone()
+        if result and result["count"] > 0:
+            return jsonify({
+                "error": "Cannot delete borrower with active loans",
+                "active_loans": result["count"]
+            }), 400
+        
+        # Check for unpaid fines
+        cursor.execute("""
+            SELECT COUNT(*) as count
+            FROM FINES f
+            JOIN BOOK_LOANS bl ON f.loan_id = bl.loan_id
+            WHERE bl.card_id = ? AND f.paid = 0
+        """, (card_id,))
+        result = cursor.fetchone()
+        if result and result["count"] > 0:
+            return jsonify({
+                "error": "Cannot delete borrower with unpaid fines",
+                "unpaid_fines_count": result["count"]
+            }), 400
+        
+        # Delete all fines associated with this borrower's loans first
+        cursor.execute("""
+            DELETE FROM FINES
+            WHERE loan_id IN (
+                SELECT loan_id FROM BOOK_LOANS WHERE card_id = ?
+            )
+        """, (card_id,))
+        
+        # Delete all loans for this borrower
+        cursor.execute("DELETE FROM BOOK_LOANS WHERE card_id = ?", (card_id,))
+        
+        # Delete the borrower
+        cursor.execute("DELETE FROM BORROWER WHERE card_id = ?", (card_id,))
+        
+        conn.commit()
+        
+        return jsonify({
+            "message": "Borrower deleted successfully",
+            "card_id": card_id
+        }), 200
+        
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"error": "Database error", "details": str(e)}), 500
+    finally:
+        conn.close()

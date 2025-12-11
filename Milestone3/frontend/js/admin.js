@@ -57,6 +57,7 @@
           <td>
             <button class="btn btn-sm btn-primary" onclick="viewBorrowerDetails('${borrower.card_id}')">View</button>
             <button class="btn btn-sm btn-info" onclick="viewBorrowerLoans('${borrower.card_id}')">Loans</button>
+            <button class="btn btn-sm btn-danger" onclick="deleteBorrower('${borrower.card_id}', ${JSON.stringify(borrower.bname)})" ${activeLoans > 0 || unpaidFines > 0 ? 'disabled title="Cannot delete: has active loans or unpaid fines"' : ''}>Delete</button>
           </td>
         `;
         tbody.appendChild(tr);
@@ -336,5 +337,23 @@
     // Load initial data
     loadBorrowers();
   });
+
+  // Global function for deleting a borrower
+  window.deleteBorrower = async function(cardId, borrowerName) {
+    if (!confirm(`Are you sure you want to delete borrower "${borrowerName}" (${cardId})?\n\nThis will:\n- Delete all their loan history\n- Delete all their fines\n- Permanently remove the borrower record\n\nThis action cannot be undone!`)) {
+      return;
+    }
+
+    try {
+      await api.deleteBorrower(cardId);
+      alert(`Borrower "${borrowerName}" (${cardId}) deleted successfully.`);
+      
+      // Reload borrowers list
+      const searchTerm = document.getElementById('borrowerSearch')?.value.trim() || '';
+      loadBorrowers(searchTerm);
+    } catch (err) {
+      alert(`Error deleting borrower: ${err.message}`);
+    }
+  };
 })();
 
