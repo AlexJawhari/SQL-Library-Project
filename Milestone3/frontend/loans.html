@@ -50,12 +50,49 @@
 
     <section class="form-section">
       <h5>Checkin</h5>
+      <div class="mb-3">
+        <div class="row g-2">
+          <div class="col-md-4">
+            <input type="text" id="checkinSearchIsbn" class="form-control" placeholder="Search by ISBN">
+          </div>
+          <div class="col-md-4">
+            <input type="text" id="checkinSearchCard" class="form-control" placeholder="Search by Card No">
+          </div>
+          <div class="col-md-4">
+            <input type="text" id="checkinSearchName" class="form-control" placeholder="Search by Borrower Name">
+          </div>
+        </div>
+        <div class="mt-2">
+          <button class="btn btn-secondary" id="checkinSearchBtn">Search Loans</button>
+        </div>
+        <div class="form-text">Search for active loans to check in. Leave all fields empty to search all active loans.</div>
+      </div>
+      <div id="checkinResults" class="mb-3" style="display: none;">
+        <div class="table-responsive">
+          <table class="table table-sm table-bordered">
+            <thead class="table-light">
+              <tr>
+                <th>Loan ID</th>
+                <th>ISBN</th>
+                <th>Title</th>
+                <th>Card No</th>
+                <th>Borrower</th>
+                <th>Date Out</th>
+                <th>Due Date</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="checkinResultsBody">
+            </tbody>
+          </table>
+        </div>
+      </div>
       <div class="row g-2">
         <div class="col-md-6">
-          <input type="text" id="checkinLoanId" class="form-control" placeholder="Loan ID">
+          <input type="text" id="checkinLoanId" class="form-control" placeholder="Or enter Loan ID directly">
         </div>
         <div class="col-md-3">
-          <button class="btn btn-success w-100" id="checkinBtn">Checkin</button>
+          <button class="btn btn-success w-100" id="checkinBtn">Checkin by ID</button>
         </div>
       </div>
     </section>

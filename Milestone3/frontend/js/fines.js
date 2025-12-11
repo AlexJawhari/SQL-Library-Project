@@ -37,12 +37,13 @@
 
   async function handleList() {
     const card = document.getElementById('finesCard').value.trim();
-    if (!card) return setStatus('Card number is required to list fines.', 'danger');
+    const showPaid = document.getElementById('showPaidFines')?.checked || false;
     setStatus('Listing fines...', 'primary');
     try {
-      const rows = await api.listFines(card);
+      const rows = await api.listFines(card, showPaid);
       renderFines(rows);
-      setStatus(`Listed fines for ${card}.`, 'success');
+      const cardText = card || 'all borrowers';
+      setStatus(`Listed fines for ${cardText}.`, 'success');
     } catch (err) {
       setStatus(`Error: ${err.message}`, 'danger');
     }

@@ -19,21 +19,30 @@
 
     <section class="form-section">
       <div class="row g-2 align-items-end">
-        <div class="col-md-4">
-          <label class="form-label">Card No.</label>
-          <input type="text" id="finesCard" class="form-control" placeholder="ID######">
+        <div class="col-md-3">
+          <label class="form-label">Card No. (optional)</label>
+          <input type="text" id="finesCard" class="form-control" placeholder="ID###### or leave empty">
         </div>
-        <div class="col-md-3 d-grid">
-          <button class="btn btn-primary" id="refreshFinesBtn">Refresh fines</button>
-        </div>
-        <div class="col-md-3 d-grid">
-          <button class="btn btn-secondary" id="listFinesBtn">List fines</button>
+        <div class="col-md-2">
+          <label class="form-label">Show Paid Fines</label>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="showPaidFines">
+            <label class="form-check-label" for="showPaidFines">
+              Include paid
+            </label>
+          </div>
         </div>
         <div class="col-md-2 d-grid">
+          <button class="btn btn-primary" id="refreshFinesBtn">Refresh fines</button>
+        </div>
+        <div class="col-md-2 d-grid">
+          <button class="btn btn-secondary" id="listFinesBtn">List fines</button>
+        </div>
+        <div class="col-md-3 d-grid">
           <button class="btn btn-success" id="payFinesBtn">Pay fines</button>
         </div>
       </div>
-      <div class="form-text">Payment allowed only if all related loans are returned.</div>
+      <div class="form-text">Payment allowed only if all related loans are returned. Leave card empty to list all fines.</div>
     </section>
 
     <section>

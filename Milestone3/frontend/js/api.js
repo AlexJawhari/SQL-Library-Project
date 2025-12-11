@@ -33,11 +33,49 @@
     async refreshFines() {
       return realFetch('/fines/refresh', { method: 'POST' });
     },
-    async listFines(card_no) {
-      return realFetch(`/fines?card_no=${encodeURIComponent(card_no)}`);
+    async listFines(card_no, showPaid = false) {
+      const params = new URLSearchParams();
+      if (card_no) params.append('card_no', card_no);
+      if (showPaid) params.append('show_paid', 'true');
+      return realFetch(`/fines?${params.toString()}`);
+    },
+    async searchCheckinLoans(isbn, card_no, borrower_name) {
+      const params = new URLSearchParams();
+      if (isbn) params.append('isbn', isbn);
+      if (card_no) params.append('card_no', card_no);
+      if (borrower_name) params.append('borrower_name', borrower_name);
+      return realFetch(`/checkin/search?${params.toString()}`);
     },
     async payFines(card_no) {
       return realFetch('/fines/pay', { method: 'POST', body: JSON.stringify({ card_no }) });
+    },
+    // Admin endpoints
+    async getAllBorrowers(search = '') {
+      const params = search ? `?search=${encodeURIComponent(search)}` : '';
+      return realFetch(`/admin/borrowers${params}`);
+    },
+    async getAllLoans(filter = 'all', search = '') {
+      const params = new URLSearchParams();
+      if (filter !== 'all') params.append('filter', filter);
+      if (search) params.append('search', search);
+      const query = params.toString() ? `?${params.toString()}` : '';
+      return realFetch(`/admin/loans${query}`);
+    },
+    async getAllFines(filter = 'unpaid', search = '') {
+      const params = new URLSearchParams();
+      if (filter !== 'all') params.append('filter', filter);
+      if (search) params.append('search', search);
+      const query = params.toString() ? `?${params.toString()}` : '';
+      return realFetch(`/admin/fines${query}`);
+    },
+    async getBookCount() {
+      return realFetch('/admin/stats');
+    },
+    async applyFine(loanId, fineAmount = null, daysLate = null) {
+      const body = { loan_id: loanId };
+      if (fineAmount !== null) body.fine_amount = fineAmount;
+      if (daysLate !== null) body.days_late = daysLate;
+      return realFetch('/admin/fines/apply', { method: 'POST', body: JSON.stringify(body) });
     },
   };
 

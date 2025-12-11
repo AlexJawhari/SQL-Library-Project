@@ -4,15 +4,18 @@ from pathlib import Path
 app = Flask(__name__)
 
 # Register blueprints for each task area first
+# CRITICAL: Register ALL blueprints BEFORE any catch-all routes
 from routes.search import bp as search_bp  # noqa: E402
 from routes.loans import bp as loans_bp  # noqa: E402
 from routes.borrowers import bp as borrowers_bp  # noqa: E402
 from routes.fines import bp as fines_bp  # noqa: E402
+from routes.admin import bp as admin_bp  # noqa: E402
 
 app.register_blueprint(search_bp)
 app.register_blueprint(loans_bp)
 app.register_blueprint(borrowers_bp)
 app.register_blueprint(fines_bp)
+app.register_blueprint(admin_bp)
 
 # Serve frontend files to avoid CORS issues (register after API routes)
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -32,6 +35,7 @@ def serve_index():
 @app.route("/loans")
 @app.route("/borrower")
 @app.route("/fines")
+@app.route("/admin")
 def serve_pages():
     from flask import request
     page = request.path.strip("/")
@@ -47,22 +51,28 @@ def serve_css(filename):
 def serve_js(filename):
     return send_from_directory(str(FRONTEND_DIR / "js"), filename)
 
+# Catch-all route for frontend pages - registered LAST so API routes are checked first
+# Flask matches routes in registration order, so blueprints above will be checked first
 @app.route("/<path:path>")
 def serve_frontend(path):
-    # Don't serve frontend for API routes
-    if path.startswith("api"):
-        return {"error": "Not found"}, 404
+    # Safety check: if this matches an API route, something is wrong
+    # (Blueprints should have handled it, but just in case)
+    if path.startswith("api/"):
+        from flask import abort
+        abort(404)
     
     # Serve HTML files directly
     if path.endswith(".html"):
-        return send_file(str(FRONTEND_DIR / path))
+        html_file = FRONTEND_DIR / path
+        if html_file.exists():
+            return send_file(str(html_file))
     
-    # Try to serve as HTML page
+    # Try to serve as HTML page (without .html extension)
     html_path = FRONTEND_DIR / f"{path}.html"
     if html_path.exists():
         return send_file(str(html_path))
     
-    # Default to landing page
+    # Default to landing page for unknown routes
     return send_file(str(FRONTEND_DIR / "landingpage.html"))
 
 
