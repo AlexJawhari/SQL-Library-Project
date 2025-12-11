@@ -48,6 +48,7 @@ All endpoints return JSON. Errors use: `{ "error": "message" }`.
 - 200 for success, 4xx for validation/logic errors, 5xx for unexpected failures.
 
 ## Data Notes
-- SQLite DB recommended; import CSVs from `Milestone3/demo/data/`.
-- Dates use `YYYY-MM-DD`.
+- SQLite database file: `Milestone3/backend/library.db`
+- Import CSVs from `Milestone3/data/` using `data_import.py`
+- Dates use `YYYY-MM-DD` format.
 

@@ -1,0 +1,147 @@
+QUICK START USER GUIDE
+Library Management System - Milestone 3
+
+================================================================================
+OVERVIEW
+================================================================================
+
+This system allows librarians to manage book loans, borrowers, and fines
+through a simple web interface. All operations are performed through the
+browser interface.
+
+================================================================================
+GETTING STARTED
+================================================================================
+
+1. Ensure backend server is running (see readme.txt for setup)
+2. Open http://localhost:8000/landingpage.html in your web browser
+3. You will see the main navigation page with links to:
+   - Search Books
+   - Manage Loans
+   - Create Borrower
+   - Manage Fines
+
+================================================================================
+SEARCHING FOR BOOKS
+================================================================================
+
+1. Click "Search Books" from the landing page
+2. Enter search term in the search box (ISBN, title, or author name)
+3. Click "Search" button
+4. Results display in a table showing:
+   - ISBN
+   - Title
+   - Authors (comma-separated)
+   - Checked Out status (Yes/No)
+   - Borrower ID (if checked out)
+
+The search is case-insensitive and supports partial matches.
+
+================================================================================
+CHECKING OUT BOOKS
+================================================================================
+
+1. Click "Manage Loans" from the landing page
+2. In the "Checkout" section:
+   - Enter the book ISBN
+   - Enter the borrower card number (format: ID######)
+   - Click "Checkout" button
+3. System will:
+   - Verify borrower exists
+   - Check borrower has less than 3 active loans
+   - Verify book is available
+   - Check borrower has no unpaid fines
+   - Create loan record with 14-day due date
+
+For batch checkout:
+1. Enter multiple ISBNs (one per line or comma-separated)
+2. Enter borrower card number
+3. Click "Batch Checkout"
+4. System processes each book individually and shows results
+
+================================================================================
+CHECKING IN BOOKS
+================================================================================
+
+1. Click "Manage Loans" from the landing page
+2. In the "Checkin" section:
+   - Enter the loan ID (from loan records)
+   - OR search by ISBN, card number, or borrower name
+3. Click "Check In" button
+4. System updates the loan record with return date
+
+================================================================================
+CREATING BORROWERS
+================================================================================
+
+1. Click "Create Borrower" from the landing page
+2. Fill in the form:
+   - SSN (required, 9 digits, any format)
+   - Name (required)
+   - Address (required)
+   - Phone (optional)
+3. Click "Create Borrower" button
+4. System generates a unique card number (ID###### format)
+5. Card number is displayed - save this for future checkouts
+
+Note: Each SSN can only have one library card.
+
+================================================================================
+MANAGING FINES
+================================================================================
+
+REFRESHING FINES:
+1. Click "Manage Fines" from the landing page
+2. Click "Refresh Fines" button
+3. System calculates fines for:
+   - Returned books that were late ($0.25 per day)
+   - Currently checked out books that are overdue
+
+VIEWING FINES:
+1. Enter borrower card number (optional - leave blank for all)
+2. Click "List Fines" button
+3. Results show total fines per borrower (unpaid only by default)
+
+PAYING FINES:
+1. Enter borrower card number
+2. Click "Pay Fines" button
+3. System verifies all books are returned before allowing payment
+4. All unpaid fines for that borrower are marked as paid
+
+Note: Fines can only be paid when all books are returned.
+
+================================================================================
+BUSINESS RULES
+================================================================================
+
+- Maximum 3 active loans per borrower
+- Books cannot be checked out if already checked out by another borrower
+- Borrowers with unpaid fines cannot check out books
+- Loan period is 14 days from checkout date
+- Fines are $0.25 per day for late returns
+- Fines can only be paid when all books are returned
+- Each borrower can have only one library card (one SSN per card)
+
+================================================================================
+ERROR MESSAGES
+================================================================================
+
+Common error messages and solutions:
+
+- "Borrower not found": Verify card number is correct
+- "Book not found": Verify ISBN is correct
+- "Maximum of 3 active loans": Borrower must return a book first
+- "Book is already checked out": Wait for current borrower to return it
+- "Cannot checkout: unpaid fines exist": Borrower must pay fines first
+- "Cannot pay fines: Unreturned books": All books must be returned first
+
+================================================================================
+TIPS
+================================================================================
+
+- Keep the backend server running while using the system
+- Refresh fines regularly to keep calculations up to date
+- Use search to verify book availability before checkout
+- Save borrower card numbers for quick reference
+- Loan IDs are shown in checkout confirmations - save for checkin
+

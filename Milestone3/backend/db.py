@@ -1,21 +1,13 @@
-import pymysql
+import sqlite3
 from pathlib import Path
 
-# MySQL connection settings (fill in your local values)
-MYSQL_CONFIG = {
-    "host": "localhost",
-    "user": "root",
-    "password": "",
-    "database": "library_demo",
-    "cursorclass": pymysql.cursors.DictCursor,
-    "charset": "utf8mb4",
-    "autocommit": True,
-}
-
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+DB_PATH = Path(__file__).resolve().parent / "library.db"
 
 
 def get_db():
-    """Return a new MySQL connection. Swap for pooling if desired."""
-    return pymysql.connect(**MYSQL_CONFIG)
+    """Return a new SQLite connection with row factory for dict-like access."""
+    conn = sqlite3.connect(str(DB_PATH))
+    conn.row_factory = sqlite3.Row
+    return conn
 

@@ -1,0 +1,281 @@
+LIBRARY MANAGEMENT SYSTEM - DESIGN DOCUMENT
+Milestone 3 - CS-4347 Database Systems
+
+================================================================================
+1. SYSTEM ARCHITECTURE
+================================================================================
+
+The system follows a three-tier architecture:
+
+FRONTEND TIER:
+- Static HTML pages with Bootstrap CSS for styling
+- Vanilla JavaScript for client-side logic
+- No build tools or frameworks required
+- Communicates with backend via HTTP REST API
+
+BACKEND TIER:
+- Flask (Python web framework) application
+- RESTful API endpoints for all operations
+- Business logic enforcement (loan limits, fines, validation)
+- Database connection management
+
+DATA TIER:
+- SQLite database (file-based, no server required)
+- Normalized relational schema
+- CSV data imported into database tables
+
+ARCHITECTURE DECISIONS:
+- Chose SQLite over MySQL/PostgreSQL for simplicity and zero-configuration
+- Flask selected for lightweight Python web framework
+- Static frontend chosen to avoid complex build tooling
+- REST API pattern for clear separation of concerns
+
+================================================================================
+2. DATABASE DESIGN
+================================================================================
+
+SCHEMA OVERVIEW:
+The database uses a normalized relational design with the following tables:
+
+BOOK:
+- Stores book information (ISBN, title)
+- Primary key: isbn_primary
+- Supports multiple ISBN formats (isbn10, isbn13)
+
+AUTHORS:
+- Stores author information
+- Primary key: author_id
+
+BOOK_AUTHORS:
+- Junction table for many-to-many relationship
+- Links books to authors (one book can have multiple authors)
+
+BORROWER:
+- Stores borrower information
+- Primary key: card_id (format: ID######)
+- Unique constraint on SSN (one card per SSN)
+
+BOOK_LOANS:
+- Tracks all book loans
+- Primary key: loan_id (auto-increment)
+- Foreign keys to BOOK and BORROWER
+- date_in NULL indicates active loan
+
+FINES:
+- Tracks fines for late returns
+- Primary key: loan_id (one-to-one with BOOK_LOANS)
+- fine_amt: decimal amount
+- paid: boolean flag (0=unpaid, 1=paid)
+
+NORMALIZATION:
+- Third normal form achieved
+- No redundant data storage
+- Proper foreign key relationships
+- Unique constraints where appropriate
+
+================================================================================
+3. API DESIGN
+================================================================================
+
+REST API ENDPOINTS:
+
+GET /api/search?q=TEXT
+- Searches books by ISBN, title, or author
+- Returns array of book objects with availability status
+- Supports substring matching (case-insensitive)
+
+POST /api/checkout
+- Creates new loan record
+- Enforces business rules (3-loan limit, availability, fines)
+- Returns loan details with dates
+
+POST /api/checkout/batch
+- Processes multiple checkouts in one request
+- Returns array of results (success/error per book)
+
+POST /api/checkin
+- Updates loan record with return date
+- Accepts loan_id for identification
+
+POST /api/borrowers
+- Creates new borrower record
+- Generates unique card_id
+- Validates SSN uniqueness
+
+POST /api/fines/refresh
+- Recalculates fines for all late loans
+- Updates fine amounts without altering paid fines
+
+GET /api/fines?card_no=IDxxxxxx
+- Lists fines grouped by borrower
+- Filters by card_no if provided
+- Shows only unpaid fines
+
+POST /api/fines/pay
+- Marks all unpaid fines as paid for a borrower
+- Validates all books are returned first
+
+ERROR HANDLING:
+- All errors return JSON: {"error": "message"}
+- HTTP status codes: 200 (success), 400 (validation), 404 (not found), 500 (server error)
+
+================================================================================
+4. BUSINESS RULES IMPLEMENTATION
+================================================================================
+
+LOAN LIMIT ENFORCEMENT:
+- Checkout endpoint queries active loans (date_in IS NULL)
+- Rejects if count >= 3
+- Enforced at database query level
+
+AVAILABILITY CHECKING:
+- Query checks for existing active loan on same ISBN
+- Prevents double-checkout of same book
+
+FINES BLOCKING:
+- Checkout endpoint joins FINES and BOOK_LOANS tables
+- Counts unpaid fines (paid=0) for borrower
+- Rejects checkout if any unpaid fines exist
+
+DUE DATE CALCULATION:
+- Set to checkout date + 14 days
+- Calculated in Python using datetime module
+
+FINE CALCULATION:
+- $0.25 per day for late returns
+- For returned books: (date_in - due_date) * 0.25
+- For overdue active loans: (today - due_date) * 0.25
+- Only updates if fine not already paid
+
+PAYMENT VALIDATION:
+- Verifies all loans for borrower have date_in set (all returned)
+- Rejects payment if any active loans exist
+
+BORROWER CREATION:
+- SSN normalized to XXX-XX-XXXX format
+- Card ID generated as ID###### (6-digit zero-padded number)
+- Queries max existing card number and increments
+
+================================================================================
+5. FRONTEND DESIGN
+================================================================================
+
+PAGE STRUCTURE:
+- Landing page with navigation to all features
+- Dedicated pages for each major function
+- Consistent Bootstrap styling throughout
+- Responsive design for different screen sizes
+
+USER INTERFACE PATTERNS:
+- Form-based input for data entry
+- Table display for search results
+- Status messages for user feedback
+- Error display in red, success in green
+
+JAVASCRIPT ARCHITECTURE:
+- Modular API client (api.js) for all backend calls
+- Page-specific scripts for UI logic
+- Error handling with user-friendly messages
+- Async/await for clean asynchronous code
+
+================================================================================
+6. DATA FLOW
+================================================================================
+
+SEARCH FLOW:
+1. User enters search term
+2. Frontend sends GET /api/search?q=term
+3. Backend queries database with LIKE pattern matching
+4. Results formatted and returned as JSON
+5. Frontend displays in table
+
+CHECKOUT FLOW:
+1. User enters ISBN and card number
+2. Frontend sends POST /api/checkout with data
+3. Backend validates borrower exists
+4. Backend checks loan limit (query active loans)
+5. Backend checks book availability
+6. Backend checks for unpaid fines
+7. If all pass, insert loan record
+8. Return success with loan details
+
+FINES REFRESH FLOW:
+1. User clicks "Refresh Fines"
+2. Frontend sends POST /api/fines/refresh
+3. Backend queries all loans
+4. For each late loan, calculate fine amount
+5. Insert or update FINES record (if not paid)
+6. Return count of updated records
+
+================================================================================
+7. ASSUMPTIONS AND DESIGN DECISIONS
+================================================================================
+
+ASSUMPTIONS:
+- Single librarian using system at a time (no concurrent user handling)
+- Local deployment only (no production security considerations)
+- SQLite file-based database sufficient for project scope
+- All dates in YYYY-MM-DD format (ISO 8601)
+
+DESIGN DECISIONS:
+- SQLite chosen for zero-configuration setup
+- Flask selected for simplicity and Python familiarity
+- Static frontend to avoid build complexity
+- REST API for clear interface contract
+- Normalized database schema for data integrity
+- Business rules enforced in backend (not frontend)
+
+TRADE-OFFS:
+- SQLite: Simpler setup but less scalable than MySQL/PostgreSQL
+- Static frontend: Easier to run but less dynamic than React/Vue
+- File-based database: Easy to reset but not suitable for production
+
+================================================================================
+8. TESTING APPROACH
+================================================================================
+
+MANUAL TESTING:
+- Each endpoint tested with valid inputs
+- Error cases tested (missing fields, invalid data)
+- Business rules verified (loan limits, fines, etc.)
+- Frontend integration tested with real backend
+
+TEST SCENARIOS:
+- Search with various terms (ISBN, title, author)
+- Checkout with valid and invalid borrowers
+- Checkout when borrower has 3 active loans
+- Checkout when book already checked out
+- Checkout when borrower has unpaid fines
+- Fine calculation for late returns
+- Fine payment validation
+
+================================================================================
+9. FUTURE IMPROVEMENTS
+================================================================================
+
+POTENTIAL ENHANCEMENTS:
+- Add authentication for multiple librarians
+- Implement book reservation system
+- Add email notifications for due dates
+- Create reporting dashboard
+- Add book categories/genres
+- Implement book renewal functionality
+- Add borrower account management page
+
+SCALABILITY CONSIDERATIONS:
+- Migrate to PostgreSQL for production
+- Add connection pooling for high traffic
+- Implement caching for search results
+- Add database indexes for performance
+- Consider microservices architecture for large scale
+
+================================================================================
+10. CONCLUSION
+================================================================================
+
+The system successfully implements all required functionality for Milestone 3.
+The architecture is simple yet effective, using modern web technologies while
+maintaining ease of setup and use. The SQLite database provides sufficient
+functionality for the project scope, and the REST API design allows for
+future expansion if needed.
+
