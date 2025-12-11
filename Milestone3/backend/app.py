@@ -1,6 +1,8 @@
 from flask import Flask
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 
 # Register blueprints for each task area
 from routes.search import bp as search_bp  # noqa: E402

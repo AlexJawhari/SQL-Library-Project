@@ -5,17 +5,24 @@ from db import get_db
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR.parent / "data"
 
-def load_table_from_csv(conn, table, columns, csv_name):
+def load_table_from_csv(conn, table, columns, csv_name, clear_first=False):
     path = DATA_DIR / csv_name
     with path.open("r", encoding="utf-8", newline="") as f:
         reader = csv.DictReader(f)
         rows = []
+        seen = set()
         for r in reader:
-            rows.append(tuple(r[col] if r[col] != "" else None for col in columns))
+            row_tuple = tuple(r[col] if r[col] != "" else None for col in columns)
+            if row_tuple not in seen:
+                rows.append(row_tuple)
+                seen.add(row_tuple)
     placeholders = ",".join(["?"] * len(columns))
     col_list = ",".join(columns)
-    sql = f"INSERT INTO {table} ({col_list}) VALUES ({placeholders})"
+    
     with conn:
+        if clear_first:
+            conn.execute(f"DELETE FROM {table}")
+        sql = f"INSERT OR IGNORE INTO {table} ({col_list}) VALUES ({placeholders})"
         conn.executemany(sql, rows)
     print(f"Loaded {len(rows)} rows into {table} from {csv_name}")
 
