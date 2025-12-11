@@ -1,20 +1,73 @@
 # SQL-Library-Project
 
-Project that organizes csv files for authors and their respective books into clean formatted data.
+A Library Management System with a web-based interface for managing books, borrowers, loans, and fines.
 
-The data is used to create a library system and backend.
+## Quick Start
 
-Which allows for a user-friendly GUI to operate the library.
+### Prerequisites
+- Python 3.8 or higher
+- pip (Python package manager)
 
-## Milestone 3
+### Setup (First Time Only)
 
-- Path: `Milestone3/`
-- Frontend: static HTML in `frontend/` (Bootstrap, no build tools). Open directly or run `python -m http.server 8000` from that folder. Backend must be running for live data.
-- Data: CSVs from Milestone1 in `Milestone3/data/`.
-- Specs: `Milestone3/specs/api.md` and `Milestone3/specs/business_rules.md`.
-- Backend: `Milestone3/backend/` (Flask + SQLite). To run:
-  1. `cd Milestone3/backend`
-  2. `python -m venv .venv` and activate
-  3. `pip install -r requirements.txt`
-  4. First time: create schema and import data (see `backend/README.md`)
-  5. `python app.py` (runs on http://127.0.0.1:5000)
+1. **Install dependencies:**
+   ```powershell
+   cd Milestone3\backend
+   pip install -r requirements.txt
+   ```
+
+2. **Initialize database:**
+   ```powershell
+   python init_db.py
+   python data_import.py
+   ```
+
+### Running the Application
+
+**Option 1: Use the batch file (Windows)**
+```powershell
+.\START_SERVER.bat
+```
+
+**Option 2: Manual start**
+```powershell
+cd Milestone3\backend
+python app.py
+```
+
+The server will start at `http://127.0.0.1:5000`
+
+Open your browser and navigate to `http://127.0.0.1:5000` to access the Library Management System.
+
+## Project Structure
+
+- **`Milestone3/backend/`** - Flask backend with SQLite database
+  - `app.py` - Main Flask application
+  - `routes/` - API route handlers
+  - `schema.sql` - Database schema
+  - `data_import.py` - Import CSV data into database
+  
+- **`Milestone3/frontend/`** - Static HTML/CSS/JavaScript frontend
+  - `landingpage.html` - Main entry point
+  - `admin.html` - Admin dashboard for librarians
+  - `js/` - JavaScript modules
+  - `css/` - Stylesheets
+
+- **`Milestone3/data/`** - CSV data files (books, authors, borrowers)
+
+- **`Milestone3/specs/`** - API and business rules documentation
+
+## Features
+
+- **Book Search** - Search books by ISBN, title, or author
+- **Checkout/Checkin** - Manage book loans
+- **Borrower Management** - Create and manage borrower accounts
+- **Fines System** - Automatic fine calculation and payment
+- **Admin Dashboard** - Comprehensive view of all system data for librarians
+
+## Documentation
+
+- **Setup Instructions:** See `STARTUP_INSTRUCTIONS.md`
+- **Testing Guide:** See `TESTING_GUIDE.md`
+- **API Documentation:** See `Milestone3/specs/api.md`
+- **Business Rules:** See `Milestone3/specs/business_rules.md`

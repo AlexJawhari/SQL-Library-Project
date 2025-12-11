@@ -1,35 +1,63 @@
 # Backend (Flask + SQLite)
 
-Uses SQLite database (file-based, no server setup needed).
+Flask backend with SQLite database for the Library Management System.
 
-## Quick start
-```bash
-cd Milestone3/backend
-python -m venv .venv
-.venv\Scripts\activate  # Windows
-pip install -r requirements.txt
+## Quick Start
 
-# First time setup: create database and import data
-python init_db.py
-python data_import.py
+### First Time Setup
 
-# Run server
+1. **Install dependencies:**
+   ```powershell
+   pip install -r requirements.txt
+   ```
+
+2. **Initialize database:**
+   ```powershell
+   python init_db.py
+   python data_import.py
+   ```
+
+### Running the Server
+
+**Option 1: Use the startup script (from project root)**
+```powershell
+.\START_SERVER.bat
+```
+
+**Option 2: Manual start**
+```powershell
 python app.py
 ```
 
-Server runs at `http://127.0.0.1:5000`. Frontend pages can be opened via file:// or any simple static server (e.g., `python -m http.server 8000` from `Milestone3/frontend`).
+Server runs at `http://127.0.0.1:5000`
 
-## Database setup
-- SQLite database file: `library.db` (created automatically)
-- Schema: `schema.sql` (run once to create tables)
-- Data import: `data_import.py` (loads CSVs from `Milestone3/data/`)
+## Project Structure
 
-## Structure (per teammate task)
-- `app.py` registers blueprints; keep as entry point.
-- `db.py` holds SQLite connection helper.
-- `schema.sql` — database schema (SQLite syntax)
-- `data_import.py` — CSV import script
-- `routes/search.py` — Task A
-- `routes/loans.py` — Task B
-- `routes/borrowers.py` — Task C
-- `routes/fines.py` — Task D
+- `app.py` - Main Flask application (entry point)
+- `db.py` - SQLite database connection helper
+- `schema.sql` - Database schema definition
+- `data_import.py` - CSV data import script
+- `routes/` - API route handlers
+  - `search.py` - Book search endpoints
+  - `loans.py` - Checkout/checkin endpoints
+  - `borrowers.py` - Borrower management endpoints
+  - `fines.py` - Fine calculation and payment endpoints
+  - `admin.py` - Admin dashboard endpoints
+
+## Database
+
+- **File:** `library.db` (created automatically)
+- **Schema:** Defined in `schema.sql`
+- **Data:** Imported from CSV files in `Milestone3/data/`
+
+## API Endpoints
+
+All endpoints are prefixed with `/api`:
+- `/api/search` - Search books
+- `/api/checkout` - Checkout a book
+- `/api/checkin` - Check in a book
+- `/api/borrowers` - Create borrower
+- `/api/fines` - Manage fines
+- `/api/admin/*` - Admin dashboard endpoints
+
+See `Milestone3/specs/api.md` for detailed API documentation.
