@@ -1,4 +1,4 @@
-from flask import Flask, send_from_directory
+from flask import Flask, send_from_directory, send_file
 from pathlib import Path
 
 app = Flask(__name__)
@@ -15,14 +15,29 @@ app.register_blueprint(borrowers_bp)
 app.register_blueprint(fines_bp)
 
 # Serve frontend files to avoid CORS issues (register after API routes)
-# Use absolute path to frontend directory
-import os
 BASE_DIR = Path(__file__).resolve().parent.parent
 FRONTEND_DIR = BASE_DIR / "frontend"
 
 @app.route("/")
 def serve_index():
-    return send_from_directory(str(FRONTEND_DIR), "landingpage.html")
+    try:
+        file_path = FRONTEND_DIR / "landingpage.html"
+        if not file_path.exists():
+            return f"File not found: {file_path}", 404
+        return send_file(str(file_path))
+    except Exception as e:
+        return f"Error serving file: {str(e)}", 500
+
+@app.route("/search")
+@app.route("/loans")
+@app.route("/borrower")
+@app.route("/fines")
+def serve_pages():
+    from flask import request
+    page = request.path.strip("/")
+    if not page:
+        page = "landingpage"
+    return send_file(str(FRONTEND_DIR / f"{page}.html"))
 
 @app.route("/css/<path:filename>")
 def serve_css(filename):
@@ -38,16 +53,17 @@ def serve_frontend(path):
     if path.startswith("api"):
         return {"error": "Not found"}, 404
     
-    # Serve HTML files
+    # Serve HTML files directly
     if path.endswith(".html"):
-        return send_from_directory(str(FRONTEND_DIR), path)
+        return send_file(str(FRONTEND_DIR / path))
     
-    # Serve pages without .html extension
-    if path in ["search", "loans", "borrower", "fines"]:
-        return send_from_directory(str(FRONTEND_DIR), f"{path}.html")
+    # Try to serve as HTML page
+    html_path = FRONTEND_DIR / f"{path}.html"
+    if html_path.exists():
+        return send_file(str(html_path))
     
     # Default to landing page
-    return send_from_directory(str(FRONTEND_DIR), "landingpage.html")
+    return send_file(str(FRONTEND_DIR / "landingpage.html"))
 
 
 @app.get("/api/health")
