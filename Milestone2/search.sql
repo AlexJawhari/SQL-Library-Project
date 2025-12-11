@@ -1,32 +1,31 @@
 -- 1. Create Tables
 CREATE TABLE IF NOT EXISTS book (
-    isbn VARCHAR(20) PRIMARY KEY,
-    title VARCHAR(255) NOT NULL
+    isbn TEXT PRIMARY KEY,
+    title TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS authors (
-    author_id INT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL
+    author_id INTEGER PRIMARY KEY,
+    name TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS book_authors (
-    isbn VARCHAR(20),
-    author_id INT,
+    isbn TEXT,
+    author_id INTEGER,
     PRIMARY KEY (isbn, author_id),
     FOREIGN KEY (isbn) REFERENCES book(isbn),
     FOREIGN KEY (author_id) REFERENCES authors(author_id)
 );
 
 CREATE TABLE IF NOT EXISTS book_loans (
-    loan_id INT AUTO_INCREMENT PRIMARY KEY,
-    card_id VARCHAR(20),
-    isbn VARCHAR(20),
+    loan_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    card_id TEXT,
+    isbn TEXT,
     date_out DATE,
     due_date DATE,
     date_in DATE,
     FOREIGN KEY (isbn) REFERENCES book(isbn)
 );
-
 
 -- 2. Insert Sample Data
 INSERT INTO book (isbn, title) VALUES
@@ -47,48 +46,54 @@ INSERT INTO book_authors (isbn, author_id) VALUES
 ('T619875682', 3),
 ('X2723786q6', 4);
 
--- NULL -> OUT
 INSERT INTO book_loans (loan_id, card_id, isbn, date_out, due_date, date_in) VALUES
-(1, 'ID000001', '0923398364', '2025-11-01', '2025-11-15', '2025-11-15'), -- IN
-(2, 'ID000002', '0891787631', '2025-11-02', '2025-11-16', '2025-11-15'), -- IN
-(3, 'ID000003', 'T619875682', '2025-11-03', '2025-11-17', NULL), -- OUT
-(4, 'ID000004', 'X2723786q6', '2025-11-04', '2025-11-18', '2025-11-15'); -- IN
-
+(1, 'ID000001', '0923398364', '2025-11-01', '2025-11-15', '2025-11-15'),
+(2, 'ID000002', '0891787631', '2025-11-02', '2025-11-16', '2025-11-15'),
+(3, 'ID000003', 'T619875682', '2025-11-03', '2025-11-17', NULL),
+(4, 'ID000004', 'X2723786q6', '2025-11-04', '2025-11-18', '2025-11-15');
 
 -- 3. Book Search
--- case-insensitive search by ISBN, title, or author
--- returns ISBN, title, authors, and status
-DELIMITER //
-
-CREATE PROCEDURE search_books(IN p_search VARCHAR(255))
-BEGIN
-    SELECT
-        b.isbn AS ISBN,
-        b.title AS TITLE,
-        GROUP_CONCAT(DISTINCT a.name SEPARATOR ', ') AS AUTHORS,
-        IF (
-            EXISTS (
-                SELECT 1
-                FROM book_loans bl
-                WHERE bl.isbn = b.isbn
-                AND bl.date_in IS NULL
-            ),
-            'OUT',
-            'IN'
-        ) AS STATUS
-    
-    FROM book b
-    LEFT JOIN book_authors ba ON b.isbn = ba.isbn
-    LEFT JOIN authors a ON ba.author_id = a.author_id
-    
-    --perform search
-    WHERE 
-        LOWER(b.isbn) LIKE LOWER(CONCAT('%', p_search, '%')) OR
-        LOWER(b.title) LIKE LOWER(CONCAT('%', p_search, '%')) OR
-        LOWER(a.name) LIKE LOWER(CONCAT('%', p_search, '%'))
-    
-    GROUP BY b.isbn, b.title
-    ORDER BY b.title;
-END //
-
-DELIMITER ;
+WITH search_term AS (
+    SELECT 'will' AS term
+)
+SELECT
+    b.isbn AS ISBN,
+    b.title AS Title,
+    (
+        SELECT GROUP_CONCAT(name, ', ')
+        FROM (
+            SELECT DISTINCT a.name
+            FROM authors a
+            JOIN book_authors ba ON ba.author_id = a.author_id
+            WHERE ba.isbn = b.isbn
+        )
+    ) AS Authors,
+    CASE 
+        WHEN EXISTS (
+            SELECT 1
+            FROM book_loans bl
+            WHERE bl.isbn = b.isbn
+            AND bl.date_in IS NULL
+        )
+        THEN 'OUT'
+        ELSE 'IN'
+    END AS Status,
+    (
+        SELECT bl.card_id
+        FROM book_loans bl
+        WHERE bl.isbn = b.isbn
+        AND bl.date_in IS NULL
+        LIMIT 1
+    ) AS Borrower_ID
+FROM book b, search_term st
+WHERE 
+    LOWER(b.isbn) LIKE LOWER('%' || st.term || '%') OR
+    LOWER(b.title) LIKE LOWER('%' || st.term || '%') OR
+    EXISTS (
+        SELECT 1
+        FROM authors a
+        JOIN book_authors ba ON ba.author_id = a.author_id
+        WHERE ba.isbn = b.isbn
+        AND LOWER(a.name) LIKE LOWER('%' || st.term || '%')
+    )
+ORDER BY b.title;
