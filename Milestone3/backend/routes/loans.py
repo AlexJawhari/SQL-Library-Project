@@ -1,3 +1,4 @@
+from datetime import date, timedelta
 from flask import Blueprint, jsonify, request
 from db import get_db
 
@@ -57,7 +58,9 @@ def checkout():
                     (isbn, card_id, date.today().isoformat(), (date.today() + timedelta(days=14)).isoformat(),))
         db.commit()
 
-        return jsonify({"isbn": isbn, "card_id": card_id}), 201
+        cur.execute("SELECT * FROM BOOK_LOANS WHERE isbn = ?", (isbn,))
+        result = cur.fetchone()
+        return jsonify({"loan_id": result["loan_id"], "isbn": isbn, "card_id": card_id, "date_out": result["date_out"], "due_date": result["due_date"]}), 201
     except Exception as e:
         db.rollback()
         return jsonify({"error": "Database error", "details": str(e)}), 500
@@ -77,5 +80,50 @@ def checkin():
     # TODO: set date_in = today for given loan_id.
     # Body: { loan_id: number }
     # SQLite uses ? placeholders (not %s)
-    return jsonify({"error": "not implemented"}), 501
 
+    parameters = request.get_json(silent=True)
+
+    isbn = (parameters.get("isbn") or "").strip()
+    card_id = (parameters.get("card_id") or "").strip()
+    bname = (parameters.get("bname") or "").strip()
+
+    db = get_db()
+
+    try:
+        cur = db.cursor()
+
+        # Placeholder for returning later.
+        placeholder_isbn = ""
+
+        # Search is performed preferentially: ISBN > CARD_ID > BNAME
+        if isbn:
+            placeholder_isbn = isbn
+            cur.execute("UPDATE BOOK_LOANS SET date_in = ? WHERE isbn = ? AND date_in IS NULL", (date.today().isoformat(), isbn,))
+        elif card_id:
+            # Selects the first book (yet to be checked in) that matches the user's card; ambiguity is introduced here without an isbn.
+            cur.execute("SELECT isbn FROM BOOK_LOANS WHERE card_id = ? AND date_in IS NULL", (card_id,))
+            temp_book = cur.fetchone()
+            placeholder_isbn = temp_book
+            cur.execute("UPDATE BOOK_LOANS SET date_in = ? WHERE isbn = ? AND date_in IS NULL", (date.today().isoformat(), temp_book,))
+        elif bname:
+            # Even more ambiguous than card_id, since the name substr could refer to multiple borrowers.
+            cur.execute("SELECT card_id FROM BORROWER WHERE bname LIKE CONCAT('%', ?, '%')", (bname,))
+            temp_card_id = cur.fetchone()
+            cur.execute("SELECT isbn FROM BOOK_LOANS WHERE card_id = ? AND date_in IS NULL", (temp_card_id,))
+            temp_book = cur.fetchone()
+            placeholder_isbn = temp_book
+            cur.execute("UPDATE BOOK_LOANS SET date_in = ? WHERE isbn = ? AND date_in IS NULL", (date.today().isoformat(), temp_book,))
+        else:
+            # No search parameters were provided.
+            return jsonify({"error": "Missing search fields"}), 400
+
+        db.commit()
+
+        cur.execute("SELECT loan_id FROM BOOK_LOANS WHERE isbn = ?", (placeholder_isbn,))
+        result = cur.fetchone()
+        return jsonify({"loan_id": result, "date_in": date.today().isoformat()}), 200
+    except Exception as e:
+        db.rollback()
+        return jsonify({"error": "Database error", "details": str(e)}), 500
+    finally:
+        db.close()
